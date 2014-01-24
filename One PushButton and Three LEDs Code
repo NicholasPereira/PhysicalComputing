@@ -1,0 +1,46 @@
+const int pushButton = 11;
+const int ledPinOne = 6;
+const int ledPinTwo = 3;
+const int ledPinThree = 2;
+
+int count = 0;
+int state = 0;
+int lastState = 0;
+
+void setup() {
+  pinMode(pushButton, INPUT);
+  pinMode(ledPinOne, OUTPUT);
+  pinMode(ledPinTwo, OUTPUT);
+  pinMode(ledPinThree, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  state = digitalRead(pushButton);
+  
+  if (state != lastState) {
+    if (state == HIGH) {
+      count++;
+    } 
+  }
+  lastState = state;
+  
+  if (count % 3 == 0) {
+    digitalWrite(ledPinOne, HIGH);
+  } else {
+    digitalWrite(ledPinOne, LOW);
+  }
+
+  if (count % 4 == 0) {
+    digitalWrite(ledPinTwo, HIGH);
+  } else {
+    digitalWrite(ledPinTwo, LOW);
+  }
+
+  if (count % 7 == 0) {
+    digitalWrite(ledPinThree, HIGH);
+  } else {
+    digitalWrite(ledPinThree, LOW);
+  }
+  
+}
