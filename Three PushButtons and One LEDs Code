@@ -1,0 +1,45 @@
+const int ledPin = 3;
+const int pushBone = 8;
+const int pushBtwo = 7;
+const int pushBthree = 4;
+
+int number = 0;
+int increment = 5;  
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  pinMode(pushBone, INPUT);
+  pinMode(pushBtwo, INPUT);
+  pinMode(pushBthree, INPUT);
+}
+
+void loop () {  
+  int pressedDownOne = digitalRead(pushBone);
+  int pressedDownTwo = digitalRead(pushBtwo);
+  int pressedDownThree = digitalRead(pushBthree);
+  
+  if (pressedDownOne == HIGH) {
+    digitalWrite(ledPin, HIGH); 
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  
+  if (pressedDownTwo == HIGH) {
+    digitalWrite(ledPin, HIGH);
+    delay(250);
+    digitalWrite(ledPin, LOW);
+    delay(250);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  
+  if (pressedDownThree == HIGH) {
+    analogWrite(ledPin, number);
+    number += increment;
+    
+    if (number == 0 || number == 255) {
+      increment= - increment;
+    }
+    delay(20);
+  }
+}
