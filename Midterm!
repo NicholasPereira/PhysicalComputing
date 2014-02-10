@@ -1,3 +1,21 @@
+/* Nicholas Pereira
+Combination lock sketch.
+
+Assigns three numbers to the lock and if correctly chosen plays a jingle. 
+Includes 4 pushButtons, 7-segment display, potentiometer, LED, and a speaker.
+
+The GameOfThrones theme song code was borrowed from Pamela Liou 
+and can be found at http://pamelaliou.com/blog/?p=77
+
+The first melody and notes for the speaker were borrowed from the Arduino website and can be 
+found at http://arduino.cc/en/Tutorial/tone
+
+The functions to display the 7-segment display were borrowed from Jacob
+Unwin and can be found at http://www.jacob-unwin.com/making-a-7-segment-display-countdown-clock/
+
+*/
+
+//basic notes used in code for speaker
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -88,90 +106,92 @@
 #define NOTE_D8  4699
 #define NOTE_DS8 4978
 
-const int G = 11;
-const int F = 3;
+const int G = 11; //These are the 7 segments and their pin location
+const int F = 3; 
 const int A = 4;
 const int B = 5;
 const int E = 6;
 const int D = 7;
 const int C = 8;
-const int dp = 9;
+const int dp = 9; // decimal point in the 7seg
 
-const int pushButtonOne =12;
-const int pushButtonTwo =10;
-const int pushButtonThree =2;
-const int checkButton = A5;
-const int ledGreen = A1;
+const int pushButtonOne =12; //first push button which sets first number connected to pin 12
+const int pushButtonTwo =10; // second push button which sets second number connected to pin 10
+const int pushButtonThree =2; // third push button which sets the third number connected to pin 2
+const int checkButton = A5; // fourth push button which calls the unlockCheck() fn if all of the estimatedCombo numbers match with the realCombo 
+const int ledGreen = A1; //led that lights up when the code is correct
 
-int pushedCheck;
-int y = 0;
+int pushedCheck; //digitalRead variable for checkButton(fourth push button)
+int y = 0; // regular variable used in startCountdown()
 
-int pushedOne;
-int pushedTwo;
-int pushedThree;
+int pushedOne; //digitalRead variable for the first pushButton
+int pushedTwo; // digitalRead variable for the second pushButton
+int pushedThree; // digitalRead variable for the third pushButton
 
-//const int ledGreen = A4;
-//const int ledOrg =A5;
+const int potentiometer = A0; //potentiometer connected to analog input 0
 
-const int potentiometer = A0;
+int potValue; // analogRead input variable for the potentiometer
+int realComboOne; //Variable - The first of three numbers of the combination. Assigned through pushButtonOne
+int realComboTwo; //Variable - the second of three numbers of the combination. Assigned through pushButtonTwo
+int realComboThree; // Variable - the last of three numbers of the combinations. Assigned through pushButtonThree
+int estimatedComboOne; // variable that is assigned through pushButtonOne. Holds the value produced by the potentiometer
+int estimatedComboTwo; // variable that is assigned through pushButtonTwo. Holds the value produced by the potentiometer
+int estimatedComboThree; // variable that is assigned through pushButtonThree . Holds the value produced by the potentiometer
+int countOne; //number of times pushButtonOne was pressed
+int countTwo; // number of times pushButtonTwo was pressed
+int countThree; // number of times pushButtonThree was pressed 
 
-int potValue;
-int realComboOne;
-int realComboTwo;
-int realComboThree;
-int estimatedComboOne;
-int estimatedComboTwo;
-int estimatedComboThree;
-int countOne;
-int countTwo;
-int countThree;
-
-int previousEstimatedComboOne;
+//These next three variables might be useless. They used to be important but I dont think they do anything now
+int previousEstimatedComboOne; //These three variables just hold the previous value that was pressed 
 int previousEstimatedComboTwo;
 int previousEstimatedComboThree;
 
+//The ultimate GameOfThrones melody used for audio feedback
 int GOT[] = {
 NOTE_G3 , NOTE_C3, NOTE_DS3, NOTE_F3, NOTE_G3 ,NOTE_C3, NOTE_DS3, NOTE_F3, NOTE_D3,
 NOTE_F3 , NOTE_B2, NOTE_D3, NOTE_DS3, NOTE_F3, NOTE_B2, NOTE_DS3, NOTE_D3,NOTE_C3 };
-
+//duration of notes in GOT[] melody above
 int gotNotes[] = {
 3, 3, 1, 1, 2, 2, 1, 1, 9,
 3, 3, 1, 1, 2, 2, 1, 1, 9};
 
-
+//little jingle that plays when you assign a value to the realCombo variable. The name is misleading - I apologize
 int correctNotes[] = {
   NOTE_E4, NOTE_F4 };
+//note duration for the correctNotes[] jingle above
 int noteDuration = 150;
 
+//little jingle that plays when you reset your combination numbers
 int resetNotes[] = {
   NOTE_E4, NOTE_DS4, NOTE_E4 };
+  //Note duration for the resetNotes[] melody above
 int resetDuration = 350;
 
-
-int noteDurations[] = {
-  4, 8, 8, 4,4,/*4,4,4*/ };
-
+//First melody that was created by Arduino
 int melody[] = {
   NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,/*0, NOTE_B3, NOTE_C4*/};
-
+//Note duration for the arduino melody
+int noteDurations[] = {
+  4, 8, 8, 4,4,/*4,4,4*/ };
+//little jingle used when you push the checkButton(fourth button) and the realCombo numbers dont match with the estimatedCombo numbers
 int inCorrectNotes[] = {
   NOTE_E4, NOTE_DS4 };
 int incorrectNoteDuration = 350;
 
-
+//These are useless - please disregard
 int noiseOne = 0;
 int noiseTwo = 0;
 int noiseThree = 0;
 
 
 void setup() {
-  pinMode(pushButtonOne, INPUT);
-  pinMode(pushButtonTwo, INPUT);
-  pinMode(pushButtonThree, INPUT);
+  pinMode(pushButtonOne, INPUT); //first button
+  pinMode(pushButtonTwo, INPUT); // second button
+  pinMode(pushButtonThree, INPUT); // third button
 //  pinMode(ledGreen, OUTPUT);
 //  pinMode(ledOrg, OUTPUT);
   Serial.begin(9600);
-  pinMode(G,12);
+  pinMode(G,12); // pin inputs for the 7segment display
   pinMode(F,11);
   pinMode(A,10);
   pinMode(B,9);
@@ -179,36 +199,31 @@ void setup() {
   pinMode(D,7);
   pinMode(C,6);
   pinMode(dp,5);
-  pinMode(ledGreen, OUTPUT);
+  pinMode(ledGreen, OUTPUT); //Led 
 }
 
 void loop() {  
-  pushedCheck = digitalRead(checkButton);
-  pushedOne = digitalRead(pushButtonOne);
-  pushedTwo = digitalRead(pushButtonTwo);
-  pushedThree = digitalRead(pushButtonThree);
-  potValue = analogRead(potentiometer);
-  potValue = map(potValue, 0, 1023, 0, 9);
+  pushedCheck = digitalRead(checkButton); //digitalRead of the fourth push Button (checkButton)
+  pushedOne = digitalRead(pushButtonOne); //digitalRead of the first push Button (pushButtonOne)
+  pushedTwo = digitalRead(pushButtonTwo); //digitalRead of the second push Button (pushButtonTwo)
+  pushedThree = digitalRead(pushButtonThree); //digitalRead of the third push Button (pushButtonThree)
+  potValue = analogRead(potentiometer); //analogRead value of the potentiometer
+  potValue = map(potValue, 0, 1023, 0, 9); // map the value from 0-1023 to 0-9 in order to display the value on the 7-segment display
   
-  if (pushedOne == LOW && pushedTwo == LOW && pushedThree == LOW){ 
+  //Meat of the code
+  if (pushedOne == LOW && pushedTwo == LOW && pushedThree == LOW){  //check to see if any of the buttons ARE NOT pressed. if they are not, update the 7-segment display (checkMe())
     checkMe(); }
-  else if (pushedOne == HIGH && pushedTwo == HIGH && pushedThree == HIGH) {
+  else if (pushedOne == HIGH && pushedTwo == HIGH && pushedThree == HIGH) { // if they are all pressed, reset the combination lock numbers (resetDigits())
     resetDigits(); }
-  else if (pushedOne == HIGH || pushedTwo == HIGH || pushedThree == HIGH) {
+  else if (pushedOne == HIGH || pushedTwo == HIGH || pushedThree == HIGH) { // if one of the pushButtons are pressed, got to the somethingWasPressed() fn to find out which one!
     somethingWasPressed(); }
 
-if (pushedCheck == HIGH) {
+if (pushedCheck == HIGH) { //if the fourth button was pressed (checkButton), then go to the unlockCheck() fn. (The unlockCheck() fn allows the jingles to play if the realCombo numbers align with the estimatedCombo number
   unlockCheck();
-  Serial.print("THE CHECK BUTTON HAS BEEN PRESSED IT HAS BEEN PRESSED IT HAS BEEN PRESSED!");
+  Serial.print("THE CHECK BUTTON HAS BEEN PRESSED IT HAS BEEN PRESSED IT HAS BEEN PRESSED!"); //obnoxious message -disregard
 }
 
-//if (pushedOne==HIGH && pushedTwo == HIGH){
-//  y++;
-//}
-// if (y == 2){
-//   Serial.println("GAAAAAAAAAAAAAAAME OVERRRRRR");
-//}
-
+//charted information from values
   Serial.print("RealCombo:");
   Serial.print(realComboOne);
   Serial.print(realComboTwo);
@@ -227,16 +242,17 @@ if (pushedCheck == HIGH) {
   delay(100);
  
 }
+//This fn plays whenever you assign the realCombo number to any of the three pushButtons 
 void noise() {
       tone(A3, correctNotes[0], noteDuration);
       delay(150);
       tone(A3, correctNotes[1], noteDuration);
       noTone(8);  
 }
-
+//This fn is called by pressing the checkButton (fourth button) 
 void unlockCheck() {
-  int x = 0;
-  if (estimatedComboOne == realComboOne) {
+  int x = 0; //variable
+  if (estimatedComboOne == realComboOne) { // if the estimated combo number is equal to the real combo number then x increments by one
     x = x +1;
 }
   if (estimatedComboTwo == realComboTwo) {
@@ -246,18 +262,18 @@ void unlockCheck() {
     x = x+1;
   }
   
-  if ( x == 3)
+  if ( x == 3) // ONLY play the music/ continue the code if all three of the estimatedCombo numbers are equal to the realCombo numbers
     playMusic();
     
-  if (x > 3 || x < 3)
+  if (x > 3 || x < 3) // if x is more or less than 3 then you shall not pass. 
     inCorrect();
 }
 
+//This fn plays the classic arduino jingle and calls the startCountdown() fn
 void playMusic() {
     Serial.println("music played");
   delay(1000);
   for (int thisNote = 0; thisNote < 5; thisNote++) {
-
     // to calculate the note duration, take one second 
     // divided by the note type.
     //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
@@ -274,34 +290,33 @@ void playMusic() {
     startCountdown();
 }
  
+ //This was my attempt to complicate the code and add another level of complexity. 
+ //The startCountdown() fn calls the countdown() fn 
  void   startCountdown() {
-  if (pushedOne == HIGH)
+  if (pushedOne == HIGH) 
     y++;
   if (pushedTwo == HIGH)
     y++;
   if (pushedThree == HIGH)
     y++;
-  countdown();
-  checkButtons(); 
-Serial.println(y);
+  countdown(); // calls the countdown() fn 
+  checkButtons(); // calls the fn below
  }
  
+ //This was another attempt to complicate the code and add another level of complexity. 
  void checkButtons() {
      if (pushedTwo == HIGH && pushedOne == HIGH)
-    Serial.println("YAY YUOU WIN YAY YAY YOU WIN BUDDY NICE ONE YOU GOT IT WHOAAAAAAA WOOOOOOOOOOO");
  }
 
+//Little jingle that plays if the three estimatedCombo numbers aren't equal to the three realCombo numbers
  void inCorrect() {
       tone(A3, inCorrectNotes[0], incorrectNoteDuration);
     delay(350);
     tone(A3, inCorrectNotes[1], incorrectNoteDuration);
-
-//    int pauseBetweenNotes = noteDuration * 1.30;
-//    delay(pauseBetweenNotes);
     noTone(8);  
 }
 
- 
+// countdown displayed on the 7segment display. This fn also lights the LED and calls the GOTintro melody
  void countdown() {
 //      five();
 //   delay(1000);
@@ -314,59 +329,62 @@ Serial.println(y);
   one();
    delay(1000);
   zero();
-  digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledGreen, HIGH); //turns on LED for a second
   delay(1000);
-  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledGreen, LOW); //turns off LED
   delay(500);
 //  if (pushedOne == HIGH)
-    gameOfThronesIntro();
+    gameOfThronesIntro(); // calls GOT melody
   }
-  
+
+//Game of thrones melody
 void gameOfThronesIntro () {
   for (int thisNote = 0; thisNote < 18; thisNote++) {
 int gotIntroNotes = 300 * gotNotes[thisNote];
 tone(A3, GOT[thisNote],gotIntroNotes);
 delay(gotIntroNotes +30);
-}
+  }
 }
 
+//This function checks which of the three buttons was pressed
 void somethingWasPressed() {
   
-  if (pushedOne == HIGH) {
-    if (countOne > 0) {
-      previousEstimatedComboOne = estimatedComboOne;
-      estimatedComboOne = potValue;
-      countOne++;
+  if (pushedOne == HIGH) { //Has the FIRST been been pressed?
+    if (countOne > 0) { // If the first button was pressed AND it is NOT the first time that this button was pressed
+      previousEstimatedComboOne = estimatedComboOne; //assign the previous estimatedCombo value of pushButtonOne to previousEstimatedComboOne
+      estimatedComboOne = potValue; //and assign a new value dictated by the potentiometer
+      countOne++; //Update and increment the number of times the button was pushed by one/.
     }
-    else {
-      realComboOne = potValue;
-      noise();
-      countOne++;      }
+    else { // If the pushButtonOne has been pressed AND this IS the first time this button has been pressed
+      realComboOne = potValue; //assign the value of the potentiometer to be the first combination in the lock
+      noise(); //play a jingle to give feedback to the person
+      countOne++;      } //increment the number of times the button was pressed
 
-  } else if (pushedTwo == HIGH) {
-    if (countTwo > 0) {
-      previousEstimatedComboTwo = estimatedComboTwo;
-      estimatedComboTwo = potValue;
-      countTwo++;
+  } else if (pushedTwo == HIGH) { // or has the SECOND button been pressed?
+    if (countTwo > 0) { //Has it been pressed previously?
+      previousEstimatedComboTwo = estimatedComboTwo; 
+      estimatedComboTwo = potValue; //assign pot value to estimatedComboTwo
+      countTwo++; //increment
     }
-    else {
-      realComboTwo = potValue;
-      noise();
-      countTwo++;}
+    else { //first time pushButtonTwo was pressed
+      realComboTwo = potValue; //assign pot value to second number in combo lock
+      noise(); //play noise
+      countTwo++;} //increment
    
-  } else if (pushedThree == HIGH)
-    if (countThree > 0) {
-      previousEstimatedComboTwo = estimatedComboTwo;
-      estimatedComboThree = potValue;
-      countThree++;
+  } else if (pushedThree == HIGH) //or has the THIRD button been pressed?
+    if (countThree > 0) { //is it the first time?
+      previousEstimatedComboTwo = estimatedComboTwo; //update
+      estimatedComboThree = potValue; //assign
+      countThree++; //increment
     }
     else {
-      realComboThree = potValue;
+      realComboThree = potValue; //assign pot value to third number in combo lock
       noise();
       countThree++;}
  }
  
- 
+ //This fn is called if all three pushButtons are pressed at the same time
+ //it resets the realCombinations, estimatedCombinations and count for all three pushButtons
 void resetDigits() {
   countOne = 0;
   countTwo = 0;
@@ -377,8 +395,10 @@ void resetDigits() {
   estimatedComboOne = 0;
   estimatedComboTwo = 0;
   estimatedComboThree = 0;
-  resetMelody();
+  resetMelody(); // also provides audio feedback that it has successfully been reset
 } 
+
+//this is the audio tune that plays when all three buttons are pressed
 void resetMelody() {
         tone(A3, resetNotes[0], resetDuration);
     delay(200);
@@ -388,6 +408,9 @@ void resetMelody() {
     noTone(8); 
 }
  
+ //this fn is constantly being called
+ //if neither of the pushButtons are pressed, the 7segment display is being updated every 100milliseconds depending on the pot value
+ //each fn below is called depending on the value from the potentiometer
   void checkMe() {
 if (potValue == 0)
     zero();
@@ -411,11 +434,8 @@ if (potValue == 9)
   nine();
 }
 
- 
- 
- 
- //EXACT SIGNALS FROM HERE ON OUT
- void zero(){
+//These funcions below are called from above and dictate which segment from the 7segment display should be lit
+void zero(){
 digitalWrite(G, HIGH);
 digitalWrite(F, LOW);
 digitalWrite(A, LOW);
