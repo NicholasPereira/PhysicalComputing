@@ -1,0 +1,536 @@
+#define NOTE_B0  31
+#define NOTE_C1  33
+#define NOTE_CS1 35
+#define NOTE_D1  37
+#define NOTE_DS1 39
+#define NOTE_E1  41
+#define NOTE_F1  44
+#define NOTE_FS1 46
+#define NOTE_G1  49
+#define NOTE_GS1 52
+#define NOTE_A1  55
+#define NOTE_AS1 58
+#define NOTE_B1  62
+#define NOTE_C2  65
+#define NOTE_CS2 69
+#define NOTE_D2  73
+#define NOTE_DS2 78
+#define NOTE_E2  82
+#define NOTE_F2  87
+#define NOTE_FS2 93
+#define NOTE_G2  98
+#define NOTE_GS2 104
+#define NOTE_A2  110
+#define NOTE_AS2 117
+#define NOTE_B2  123
+#define NOTE_C3  131
+#define NOTE_CS3 139
+#define NOTE_D3  147
+#define NOTE_DS3 156
+#define NOTE_E3  165
+#define NOTE_F3  175
+#define NOTE_FS3 185
+#define NOTE_G3  196
+#define NOTE_GS3 208
+#define NOTE_A3  220
+#define NOTE_AS3 233
+#define NOTE_B3  247
+#define NOTE_C4  262
+#define NOTE_CS4 277
+#define NOTE_D4  294
+#define NOTE_DS4 311
+#define NOTE_E4  330
+#define NOTE_F4  349
+#define NOTE_FS4 370
+#define NOTE_G4  392
+#define NOTE_GS4 415
+#define NOTE_A4  440
+#define NOTE_AS4 466
+#define NOTE_B4  494
+#define NOTE_C5  523
+#define NOTE_CS5 554
+#define NOTE_D5  587
+#define NOTE_DS5 622
+#define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_FS5 740
+#define NOTE_G5  784
+#define NOTE_GS5 831
+#define NOTE_A5  880
+#define NOTE_AS5 932
+#define NOTE_B5  988
+#define NOTE_C6  1047
+#define NOTE_CS6 1109
+#define NOTE_D6  1175
+#define NOTE_DS6 1245
+#define NOTE_E6  1319
+#define NOTE_F6  1397
+#define NOTE_FS6 1480
+#define NOTE_G6  1568
+#define NOTE_GS6 1661
+#define NOTE_A6  1760
+#define NOTE_AS6 1865
+#define NOTE_B6  1976
+#define NOTE_C7  2093
+#define NOTE_CS7 2217
+#define NOTE_D7  2349
+#define NOTE_DS7 2489
+#define NOTE_E7  2637
+#define NOTE_F7  2794
+#define NOTE_FS7 2960
+#define NOTE_G7  3136
+#define NOTE_GS7 3322
+#define NOTE_A7  3520
+#define NOTE_AS7 3729
+#define NOTE_B7  3951
+#define NOTE_C8  4186
+#define NOTE_CS8 4435
+#define NOTE_D8  4699
+#define NOTE_DS8 4978
+
+const int G = 11;
+const int F = 3;
+const int A = 4;
+const int B = 5;
+const int E = 6;
+const int D = 7;
+const int C = 8;
+const int dp = 9;
+
+const int pushButtonOne =12;
+const int pushButtonTwo =10;
+const int pushButtonThree =2;
+const int checkButton = A5;
+const int ledGreen = A1;
+
+int pushedCheck;
+int y = 0;
+
+int pushedOne;
+int pushedTwo;
+int pushedThree;
+
+//const int ledGreen = A4;
+//const int ledOrg =A5;
+
+const int potentiometer = A0;
+
+int potValue;
+int realComboOne;
+int realComboTwo;
+int realComboThree;
+int estimatedComboOne;
+int estimatedComboTwo;
+int estimatedComboThree;
+int countOne;
+int countTwo;
+int countThree;
+
+int previousEstimatedComboOne;
+int previousEstimatedComboTwo;
+int previousEstimatedComboThree;
+
+int GOT[] = {
+NOTE_G3 , NOTE_C3, NOTE_DS3, NOTE_F3, NOTE_G3 ,NOTE_C3, NOTE_DS3, NOTE_F3, NOTE_D3,
+NOTE_F3 , NOTE_B2, NOTE_D3, NOTE_DS3, NOTE_F3, NOTE_B2, NOTE_DS3, NOTE_D3,NOTE_C3 };
+
+int gotNotes[] = {
+3, 3, 1, 1, 2, 2, 1, 1, 9,
+3, 3, 1, 1, 2, 2, 1, 1, 9};
+
+
+int correctNotes[] = {
+  NOTE_E4, NOTE_F4 };
+int noteDuration = 150;
+
+int resetNotes[] = {
+  NOTE_E4, NOTE_DS4, NOTE_E4 };
+int resetDuration = 350;
+
+
+int noteDurations[] = {
+  4, 8, 8, 4,4,/*4,4,4*/ };
+
+int melody[] = {
+  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,/*0, NOTE_B3, NOTE_C4*/};
+
+int inCorrectNotes[] = {
+  NOTE_E4, NOTE_DS4 };
+int incorrectNoteDuration = 350;
+
+
+int noiseOne = 0;
+int noiseTwo = 0;
+int noiseThree = 0;
+
+
+void setup() {
+  pinMode(pushButtonOne, INPUT);
+  pinMode(pushButtonTwo, INPUT);
+  pinMode(pushButtonThree, INPUT);
+//  pinMode(ledGreen, OUTPUT);
+//  pinMode(ledOrg, OUTPUT);
+  Serial.begin(9600);
+  pinMode(G,12);
+  pinMode(F,11);
+  pinMode(A,10);
+  pinMode(B,9);
+  pinMode(E,8);
+  pinMode(D,7);
+  pinMode(C,6);
+  pinMode(dp,5);
+  pinMode(ledGreen, OUTPUT);
+}
+
+void loop() {  
+  pushedCheck = digitalRead(checkButton);
+  pushedOne = digitalRead(pushButtonOne);
+  pushedTwo = digitalRead(pushButtonTwo);
+  pushedThree = digitalRead(pushButtonThree);
+  potValue = analogRead(potentiometer);
+  potValue = map(potValue, 0, 1023, 0, 9);
+  
+  if (pushedOne == LOW && pushedTwo == LOW && pushedThree == LOW){ 
+    checkMe(); }
+  else if (pushedOne == HIGH && pushedTwo == HIGH && pushedThree == HIGH) {
+    resetDigits(); }
+  else if (pushedOne == HIGH || pushedTwo == HIGH || pushedThree == HIGH) {
+    somethingWasPressed(); }
+
+if (pushedCheck == HIGH) {
+  unlockCheck();
+  Serial.print("THE CHECK BUTTON HAS BEEN PRESSED IT HAS BEEN PRESSED IT HAS BEEN PRESSED!");
+}
+
+//if (pushedOne==HIGH && pushedTwo == HIGH){
+//  y++;
+//}
+// if (y == 2){
+//   Serial.println("GAAAAAAAAAAAAAAAME OVERRRRRR");
+//}
+
+  Serial.print("RealCombo:");
+  Serial.print(realComboOne);
+  Serial.print(realComboTwo);
+  Serial.print(realComboThree);
+  Serial.print("     EstimatedCombo:");
+  Serial.print(estimatedComboOne);
+  Serial.print(estimatedComboTwo);
+  Serial.print(estimatedComboThree);
+  Serial.print("     C1:");
+  Serial.print(countOne);
+  Serial.print("  C2:");
+  Serial.print(countTwo);
+  Serial.print("  C3:");
+  Serial.println(countThree);
+  
+  delay(100);
+ 
+}
+void noise() {
+      tone(A3, correctNotes[0], noteDuration);
+      delay(150);
+      tone(A3, correctNotes[1], noteDuration);
+      noTone(8);  
+}
+
+void unlockCheck() {
+  int x = 0;
+  if (estimatedComboOne == realComboOne) {
+    x = x +1;
+}
+  if (estimatedComboTwo == realComboTwo) {
+    x = x+1;
+  }
+  if (estimatedComboThree == realComboThree) {
+    x = x+1;
+  }
+  
+  if ( x == 3)
+    playMusic();
+    
+  if (x > 3 || x < 3)
+    inCorrect();
+}
+
+void playMusic() {
+    Serial.println("music played");
+  delay(1000);
+  for (int thisNote = 0; thisNote < 5; thisNote++) {
+
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000/noteDurations[thisNote];
+    tone(A3, melody[thisNote],noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(A3);
+}
+    startCountdown();
+}
+ 
+ void   startCountdown() {
+  if (pushedOne == HIGH)
+    y++;
+  if (pushedTwo == HIGH)
+    y++;
+  if (pushedThree == HIGH)
+    y++;
+  countdown();
+  checkButtons(); 
+Serial.println(y);
+ }
+ 
+ void checkButtons() {
+     if (pushedTwo == HIGH && pushedOne == HIGH)
+    Serial.println("YAY YUOU WIN YAY YAY YOU WIN BUDDY NICE ONE YOU GOT IT WHOAAAAAAA WOOOOOOOOOOO");
+ }
+
+ void inCorrect() {
+      tone(A3, inCorrectNotes[0], incorrectNoteDuration);
+    delay(350);
+    tone(A3, inCorrectNotes[1], incorrectNoteDuration);
+
+//    int pauseBetweenNotes = noteDuration * 1.30;
+//    delay(pauseBetweenNotes);
+    noTone(8);  
+}
+
+ 
+ void countdown() {
+//      five();
+//   delay(1000);
+//   four();
+//   delay(1000);
+   three();
+   delay(1000);
+  two();
+   delay(1000);
+  one();
+   delay(1000);
+  zero();
+  digitalWrite(ledGreen, HIGH);
+  delay(1000);
+  digitalWrite(ledGreen, LOW);
+  delay(500);
+//  if (pushedOne == HIGH)
+    gameOfThronesIntro();
+  }
+  
+void gameOfThronesIntro () {
+  for (int thisNote = 0; thisNote < 18; thisNote++) {
+int gotIntroNotes = 300 * gotNotes[thisNote];
+tone(A3, GOT[thisNote],gotIntroNotes);
+delay(gotIntroNotes +30);
+}
+}
+
+void somethingWasPressed() {
+  
+  if (pushedOne == HIGH) {
+    if (countOne > 0) {
+      previousEstimatedComboOne = estimatedComboOne;
+      estimatedComboOne = potValue;
+      countOne++;
+    }
+    else {
+      realComboOne = potValue;
+      noise();
+      countOne++;      }
+
+  } else if (pushedTwo == HIGH) {
+    if (countTwo > 0) {
+      previousEstimatedComboTwo = estimatedComboTwo;
+      estimatedComboTwo = potValue;
+      countTwo++;
+    }
+    else {
+      realComboTwo = potValue;
+      noise();
+      countTwo++;}
+   
+  } else if (pushedThree == HIGH)
+    if (countThree > 0) {
+      previousEstimatedComboTwo = estimatedComboTwo;
+      estimatedComboThree = potValue;
+      countThree++;
+    }
+    else {
+      realComboThree = potValue;
+      noise();
+      countThree++;}
+ }
+ 
+ 
+void resetDigits() {
+  countOne = 0;
+  countTwo = 0;
+  countThree = 0; 
+  realComboOne = 0;
+  realComboTwo = 0;
+  realComboThree = 0;
+  estimatedComboOne = 0;
+  estimatedComboTwo = 0;
+  estimatedComboThree = 0;
+  resetMelody();
+} 
+void resetMelody() {
+        tone(A3, resetNotes[0], resetDuration);
+    delay(200);
+    tone(A3, resetNotes[1], resetDuration);
+    delay(200);
+    tone(A3, resetNotes[2], resetDuration);
+    noTone(8); 
+}
+ 
+  void checkMe() {
+if (potValue == 0)
+    zero();
+if (potValue == 1)
+  one();
+if (potValue == 2)
+  two();
+if (potValue == 3)
+  three();
+if (potValue == 4)
+  four();
+if (potValue == 5)
+  five();
+if (potValue == 6)
+  six();
+if (potValue == 7)
+  seven();
+if (potValue == 8)
+  eight();
+if (potValue == 9)
+  nine();
+}
+
+ 
+ 
+ 
+ //EXACT SIGNALS FROM HERE ON OUT
+ void zero(){
+digitalWrite(G, HIGH);
+digitalWrite(F, LOW);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, LOW);
+digitalWrite(D, LOW);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void one(){ //turns on
+digitalWrite(G, HIGH);
+digitalWrite(F, HIGH);
+digitalWrite(A, HIGH);
+digitalWrite(B, LOW);
+digitalWrite(E, HIGH);
+digitalWrite(D, HIGH);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void two(){
+digitalWrite(G, LOW);
+digitalWrite(F, HIGH);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, LOW);
+digitalWrite(D, LOW);
+digitalWrite(C, HIGH);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void three(){
+digitalWrite(G, LOW);
+digitalWrite(F, HIGH);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, HIGH);
+digitalWrite(D, LOW);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void four(){
+digitalWrite(G, LOW);
+digitalWrite(F, LOW);
+digitalWrite(A, HIGH);
+digitalWrite(B, LOW);
+digitalWrite(E, HIGH);
+digitalWrite(D, HIGH);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void five(){
+digitalWrite(G, LOW);
+digitalWrite(F, LOW);
+digitalWrite(A, LOW);
+digitalWrite(B, HIGH);
+digitalWrite(E, HIGH);
+digitalWrite(D, LOW);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void six(){
+digitalWrite(G, LOW);
+digitalWrite(F, LOW);
+digitalWrite(A, LOW);
+digitalWrite(B, HIGH);
+digitalWrite(E, LOW);
+digitalWrite(D, LOW);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void seven(){
+digitalWrite(G, HIGH);
+digitalWrite(F, HIGH);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, HIGH);
+digitalWrite(D, HIGH);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void eight(){
+digitalWrite(G, LOW);
+digitalWrite(F, LOW);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, LOW);
+digitalWrite(D, LOW);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
+ 
+void nine(){
+digitalWrite(G, LOW);
+digitalWrite(F, LOW);
+digitalWrite(A, LOW);
+digitalWrite(B, LOW);
+digitalWrite(E, HIGH);
+digitalWrite(D, HIGH);
+digitalWrite(C, LOW);
+digitalWrite(dp, HIGH);
+delay(10);
+}
