@@ -1,0 +1,33 @@
+/*
+Nicholas Pereira
+Lab 4:Tone
+Simple Alarm that would be included in a box with your most prized 
+posessions. The alarm sounds if the box is opened.
+
+One photocell and one speaker
+*/
+
+#define NOTE_C4  262
+
+int threshold = 50;
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int sensorReading = analogRead(A0);
+
+  sensorReading = map(sensorReading, 0, 1023, 0, 100);
+
+  if (sensorReading >= threshold)
+    scream();
+  else 
+    Serial.println("I am safe");  
+    
+  delay(100);
+}
+
+void scream() {
+  Serial.println("Start Screaming!");
+  tone(6, NOTE_C4, 100);
+}
