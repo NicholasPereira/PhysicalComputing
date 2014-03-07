@@ -1,0 +1,47 @@
+/*
+Nicholas Pereira
+Lab 4- Airplane Take off
+
+Servo is triggered by push button, which rotates plane's takeoff ramp 
+that shoots plane in the air.
+
+*/
+
+#include <Servo.h>
+
+Servo myservo;
+const int pushButton = 4;
+
+int pos = 90;
+
+void setup() {
+  myservo.attach(9);
+  pinMode(pushButton, INPUT);
+}
+
+void loop() {
+  int fire = digitalRead(pushButton);
+  
+  if (fire == HIGH) 
+    toTheSky();
+  else
+    myservo.write(pos);
+    
+    delay(100);
+    
+}
+
+void toTheSky() {
+  delay(3000);
+  for(pos = 180; pos>=90; pos-=1)     // goes from 180 degrees to 0 degrees 
+  {                                
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(5);                       // waits 15ms for the servo to reach the position 
+  } 
+    for(pos = 90; pos < 180; pos += 1)  // goes from 0 degrees to 180 degrees 
+  {                                  // in steps of 1 degree 
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
+}
+  
