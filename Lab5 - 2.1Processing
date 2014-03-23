@@ -1,0 +1,27 @@
+import processing.serial.* ;
+Serial myPort;
+
+float ypos;
+
+void setup() {
+  size(640, 360);
+  noSmooth();
+  fill(126);
+  println(Serial.list());
+  myPort = new Serial(this, Serial.list()[2], 9600);
+}
+
+void draw() {
+  background(0);
+  ypos = 300;
+  if (mousePressed) {
+    ypos = 100;
+    myPort.write('H');    
+  } else {
+    myPort.write('L');
+  }
+  ellipse(mouseX, ypos, 50, 50);
+
+
+
+}
