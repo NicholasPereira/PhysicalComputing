@@ -1,0 +1,26 @@
+#include <Servo.h>
+
+Servo myservo;
+
+int myByte;
+int pos = 0;
+
+void setup() {
+  myservo.attach(10);
+  Serial.begin(9600);
+}
+void loop() {
+  if (Serial.available() > 0) {
+    myByte = Serial.read();
+    if (myByte == 'H') {
+      for (pos = 0; pos <90; pos++) {
+        myservo.write(pos);
+        delay(15);
+      }
+      for (pos = 90; pos>= 1; pos --) {
+        myservo.write(pos);
+        delay(15);
+      }
+    }
+  }
+}
