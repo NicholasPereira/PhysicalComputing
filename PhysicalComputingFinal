@@ -1,0 +1,524 @@
+/*
+Nicholas Pereira
+Physical Computing Final - Corecto
+
+Device for taking tests
+*/
+
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+const int aLed = 10; //first led
+const int bLed = 7; //second led
+const int cLed = 8; //third led
+const int dLed = 9; // fourth led
+const int aForce = A2; //first force sensor
+const int bForce = A3; //second force sensor
+const int cForce = A4; //third force sensor
+const int dForce = A5; //fourth force sensor
+
+int threshold = 750; //threshold of Force sensors
+const int numberOfQuestions = 4; 
+int estimatedAnswers[numberOfQuestions];
+int lastPressedSensor;
+int answers[] = {3, 4, 1, 2}; //answers to each question
+int score = 0;
+boolean variable = false;
+int count = 0;
+
+unsigned long startTime;
+//unsigned long timerOne;
+//unsigned long timerTwo;
+//unsigned long timerThree;
+//unsigned long timerFour;
+//unsigned long timerFive;
+//
+//unsigned long answerTimer;
+//unsigned long preMillis;
+//unsigned long currentMillis;
+
+
+
+//char answerA = 'B';
+
+void setup() {
+  pinMode(aLed, OUTPUT);
+  pinMode(bLed, OUTPUT);
+  pinMode(cLed, OUTPUT);
+  pinMode(dLed, OUTPUT);
+  lcd.begin(16, 2);
+  
+//  lcd.print("PRESS ALL OF ");
+//  lcd.setCursor(0,1);
+//  lcd.print("THE SENSORS");
+  lcd.home();
+  Serial.begin(9600);
+}
+void loop() {
+  //analog reads
+  int aPressure = analogRead(aForce); 
+  int bPressure = analogRead(bForce);
+  int cPressure = analogRead(cForce);
+  int dPressure = analogRead(dForce);
+  
+                    //Turn light on if respected sensor has exceeded threshold
+    if (aPressure > threshold){ 
+    digitalWrite(aLed, HIGH);
+//    Serial.println("A LIGHT ON");
+    lastPressedSensor = 1;
+  } else 
+    digitalWrite(aLed, LOW);
+    
+  if (bPressure > threshold){
+    digitalWrite(bLed, HIGH);
+//    Serial.println("B LIGHT ON");
+     lastPressedSensor = 2;
+  } else 
+    digitalWrite(bLed, LOW);
+    
+  if (cPressure > threshold){
+    digitalWrite(cLed, HIGH);
+//    Serial.println("C LIGHT ON");
+    lastPressedSensor = 3;
+  } else 
+    digitalWrite(cLed, LOW);
+    
+  if (dPressure > threshold){
+    digitalWrite(dLed, HIGH);
+//    Serial.println("D LIGHT ON");
+    lastPressedSensor = 4;
+  } else 
+    digitalWrite(dLed, LOW);
+ 
+    
+                          //MEAT OF CODE
+      lcd.clear(); 
+      startTime = millis();
+    
+    //start q's and a's
+    if ( startTime < 2000UL) { 
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("Are you ready?!");
+    }
+    if ( startTime > 2000UL && startTime < 4000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(0);
+      lcd.print("Question 1!");
+    }
+
+    //q1
+    if ( startTime > 4000UL && startTime < 8000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("How much current");
+      lcd.setCursor(0,1);
+      lcd.print("does the Arduino");
+    }
+    if (startTime > 8000UL && startTime < 10000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("draw?");
+    }    
+    if ( startTime > 13000UL && startTime < 16000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(1);
+      lcd.print("A) 30mA");
+      checkPressed(0);
+    }
+    if ( startTime > 16000UL && startTime < 19000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("B) 5V");
+      checkPressed(0); 
+    }
+    if ( startTime > 19000UL && startTime < 22000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(2);
+      lcd.print("C) 40mA");
+      checkPressed(0);
+    }
+    if ( startTime > 22000UL && startTime < 25000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("D) 3.3V");
+      checkPressed(0);
+    }
+    if ( startTime > 25000UL && startTime < 30000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(3);
+      lcd.print("A) 30mA");
+      lcd.setCursor(9,0);
+      lcd.print("B) 5V");
+      lcd.setCursor(0,1);
+      lcd.print("C) 40mA");
+      lcd.setCursor(9,1);
+      lcd.print("D) 3.3V");
+      checkPressed(0);
+    }
+  
+  
+//Q2  
+    if ( startTime > 30000UL && startTime < 32000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+
+    if ( startTime > 32000UL && startTime < 33000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("Question Two");
+    }
+    if ( startTime > 33000UL && startTime < 37000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("What year did");
+      lcd.setCursor(0,1);
+      lcd.print("The Second World");
+    }
+    if ( startTime > 37000UL && startTime < 39000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("War start?");
+    }
+    if ( startTime > 39000UL && startTime < 42000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A) 1936");
+      checkPressed(1);
+    }
+    if ( startTime > 42000UL && startTime < 45000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("B) 1937");
+      checkPressed(1);
+    }
+    if ( startTime > 45000UL && startTime < 48000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("C) 1938");
+      checkPressed(1);
+    }
+    if ( startTime > 48000UL && startTime < 51000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("D) 1939");
+      checkPressed(1);
+    }
+    if ( startTime > 51000UL && startTime < 56000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A) 1936");
+      lcd.setCursor(9,0);
+      lcd.print("B) 1937");
+      lcd.setCursor(0,1);
+      lcd.print("C) 1938");
+      lcd.setCursor(9,1);
+      lcd.print("D) 1939"); 
+      checkPressed(1);
+    }
+
+
+//q3
+    if ( startTime > 56000 && startTime < 58000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+    if ( startTime > 58000 && startTime < 59000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("Question Trois!");
+    }
+    if ( startTime > 59000 && startTime < 63000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("Which one of");
+      lcd.setCursor(0,1);
+      lcd.print("the following");
+    }
+    if ( startTime > 63000 && startTime < 67000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("processes can");
+      lcd.setCursor(0,1);
+      lcd.print("only occur in");
+    }
+    if ( startTime > 67000 && startTime < 69000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("a living cell?");
+    }
+    if ( startTime > 69000 && startTime < 72000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A) Endocytosis");
+      checkPressed(2);
+    }
+    if ( startTime > 72000 && startTime < 75000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("B) Osmosis");
+      checkPressed(2);
+    }
+    if ( startTime > 75000 && startTime < 78000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("C)");
+      lcd.setCursor(0,1);
+      lcd.print("Bulk Filtration");
+      checkPressed(2);
+    }
+    if ( startTime > 78000 && startTime < 81000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("D) Diffusion ");
+      checkPressed(2);
+    }
+    if ( startTime > 81000 && startTime < 82000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(2);
+    }
+    if ( startTime > 82000 && startTime < 83000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A) Endocytosis");
+      checkPressed(2);
+    }
+    if ( startTime > 83000 && startTime < 84000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("B) Osmosis");
+      checkPressed(2);
+    }
+    if ( startTime > 84000 && startTime < 85000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("C)");
+      lcd.setCursor(0,1);
+      lcd.print("Bulk Filtration");
+      checkPressed(2);
+    }
+    if ( startTime > 85000 && startTime < 86000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("D) Diffusion");
+      checkPressed(2);
+    }
+
+//q4
+    if ( startTime > 86000 && startTime < 88000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+    if ( startTime > 88000 && startTime < 89000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("LAST QUESTION");
+      lcd.setCursor(0,1);
+      lcd.print("Question quattro");
+    }
+    if ( startTime > 89000 && startTime < 90000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+    if ( startTime > 90000 && startTime < 94000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A murderer is");
+      lcd.setCursor(0,1);
+      lcd.print("condemned to... ");
+    }
+    if ( startTime > 94000 && startTime < 96000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("...death");
+    }
+    
+    if ( startTime > 96000 && startTime < 99000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("He must");
+      lcd.setCursor(0,1);
+      lcd.print("choose between");
+    }
+    if ( startTime > 99000 && startTime < 101000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("four rooms.");
+    }
+    if ( startTime > 101000 && startTime < 103000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+    if ( startTime > 103000 && startTime < 106000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("A) A room full");
+      lcd.setCursor(0,1);
+      lcd.print("of raging fires");
+      checkPressed(3);
+    }
+    if ( startTime > 106000 && startTime < 107000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(3);
+    }
+    if ( startTime > 107000 && startTime < 110000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("B) A room full");
+      lcd.setCursor(0,1);
+      lcd.print("of lions that");
+      checkPressed(3);
+    }
+    if ( startTime > 110000 && startTime < 113000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("haven't eaten");
+      lcd.setCursor(0,1);
+      lcd.print("in 3 years.");
+      checkPressed(3);
+    }    
+    if ( startTime > 113000 && startTime < 114000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(3);
+    }
+    
+    if ( startTime > 114000 && startTime < 118000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("C) A room full");
+      lcd.setCursor(0,1);
+      lcd.print("of assassins");
+      checkPressed(3);
+    }
+    if ( startTime > 118000 && startTime < 120000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("with loaded");
+      lcd.setCursor(0,1);
+      lcd.print("guns!");
+      checkPressed(3);
+    }
+    
+    if ( startTime > 120000 && startTime < 121000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(3);
+    }
+    if ( startTime > 121000 && startTime < 125000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("D) A room full");
+      lcd.setCursor(0,1);
+      lcd.print("of poison...");
+      checkPressed(3);
+    }
+    
+    if ( startTime > 125000 && startTime < 127000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      checkPressed(3);
+    }
+    if ( startTime > 127000 && startTime < 129000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print("Your answer?");
+      checkPressed(3);
+    }
+    if ( startTime > 129000 && startTime < 131000UL) {
+      lcd.setCursor(0,0);
+      lcd.clear();
+    }
+    
+    
+    
+
+
+
+
+
+    
+              //DONE QUIZ
+              //CHECK SCORE
+    if( startTime > 131000UL) {
+      lcd.clear();
+      if (count ==0) {
+        variable = true;
+        count ++;
+      }
+      lcd.clear();
+      lcd.print("Score:");
+      lcd.setCursor(7,0);
+      lcd.print(score);
+      lcd.setCursor(8,0);
+      lcd.print("/");
+      lcd.setCursor(9,0);
+      lcd.print(numberOfQuestions);
+      lcd.setCursor(0,1);
+      if (score == 0)
+        lcd.print("Go hit the books");
+      else if (score == 1)
+        lcd.print("Yeesh. Nice Try..");
+      else if (score == 2)
+        lcd.print("Nice try?");
+      else if (score == 3)
+        lcd.print("Not bad.");
+      else if (score == 4)
+        lcd.print("Perfect!");
+//      else if (score == 5)
+//        lcd.print("Perfect!");
+    }
+    
+    
+    Serial.println(lastPressedSensor);  
+      Serial.println(estimatedAnswers[1]);
+    delay(200);
+    
+    if (variable)
+      checkScore();
+      
+    Serial.print("score  ");
+    Serial.println(score);
+
+}
+void checkScore() {
+    if ( estimatedAnswers[0] == answers[0]){
+      score++;
+    }
+    if ( estimatedAnswers[1] == answers[1]){
+      score++;
+    }
+    if ( estimatedAnswers[2] == answers[2]){
+      score++;
+    }
+    if ( estimatedAnswers[3] == answers[3]){
+      score++;
+    }
+//    if ( estimatedAnswers[4] == answers[4]){
+//      score++;
+//    }
+    variable = false;
+}
+
+void checkPressed(int question) {
+   if (analogRead(aForce) > threshold)
+    estimatedAnswers[question] = 1; 
+
+   if (analogRead(bForce) > threshold)
+    estimatedAnswers[question] = 2; 
+
+   if (analogRead(cForce) > threshold)
+    estimatedAnswers[question] = 3; 
+
+   if (analogRead(dForce) > threshold)
+    estimatedAnswers[question] = 4; 
+    
+//    return estimatedAnswers[questions];
+}
