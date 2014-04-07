@@ -1,0 +1,18 @@
+int senVal, senVal2;
+ 
+void setup()
+{
+  Serial.begin(115200);
+}
+ 
+void loop()
+{ 
+  senVal = analogRead(A1);
+  senVal2 = analogRead(A3);
+  
+  Serial.print(senVal);
+  Serial.print(",");
+  Serial.println(senVal2);
+  
+  delay(2);
+}
