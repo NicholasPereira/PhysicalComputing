@@ -1,0 +1,52 @@
+import processing.serial.*;
+ 
+Serial myPort;
+ 
+float val1;
+float val2;
+ 
+void setup()
+{
+  size(480,670);
+  
+  println(Serial.list());
+  myPort = new Serial(this,Serial.list()[1],115200);
+  myPort.bufferUntil('\n');
+  
+  ellipseMode(CENTER);
+}
+ 
+void serialEvent (Serial myPort)
+{
+  String inString = myPort.readStringUntil('\n');
+  
+  if (inString != null)
+  {
+    inString = trim(inString);
+    
+    float inByte = float(inString);
+    
+    println(inByte);
+  }
+  
+  int sensors[] = int(split(inString, ','));
+ 
+  // print out the values you got:
+  for (int sensorNum = 0; sensorNum < sensors.length; sensorNum++) {
+    print("Sensor " + sensorNum + ": " + sensors[sensorNum] + "\t");
+  }
+  
+  val1 = sensors[0];
+  //val1 = map(val1,0,1023,0,400);
+  
+  val2 = sensors[1];
+  //val2 = map(val2,0,1023,0,400);
+  
+  // add a linefeed after all the sensor values are printed:
+  println();
+}
+ 
+void draw()
+{
+  ellipse(val1,val2,20,20);
+}
